@@ -68,14 +68,26 @@ class Client extends EventEmitter {
 		const ordered = [];
 		let length = DATA_TYPES.varint.size(packetID);
 
-		for (const definition of struct) {
+		for (let definition of struct) {
 			for (const key in data) {
 				if (key == definition.name) {
+					if (definition.type instanceof Array) {
+						definition = {
+							type: definition.type[0],
+							options: definition.type[1],
+						};
+					}
+
 					ordered.push({
 						name: key,
 						type: definition.type,
-						value: data[key]
+						value: data[key],
+						options: definition.options
 					});
+
+					if (!DATA_TYPES[definition.type]) {
+						console.log('DATA TYPE MISSING', definition.type);
+					}
 
 					length += DATA_TYPES[definition.type].size(data[key], definition.options);
 				}
@@ -87,7 +99,7 @@ class Client extends EventEmitter {
 		offset = DATA_TYPES.varint.write(packetID, packet, offset);
 
 		for (const definition of ordered) {
-			offset = DATA_TYPES[definition.type].write(definition.value, packet, offset);
+			offset = DATA_TYPES[definition.type].write(definition.value, packet, offset, definition.options);
 		}
 		
 		packet = Buffer.concat([

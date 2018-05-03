@@ -3,11 +3,10 @@ const DATA_TYPES = require('./data_types');
 class Packet {
 	constructor(buffer, struct) {
 		this.buffer = buffer;
-		this.cursor = 0;
 
-		this.length = this.readVarInt();
-		this.id = this.readVarInt();
-		this.payload = buffer.subarray(0x02);
+		this.length = DATA_TYPES.varint.read(this.buffer);
+		this.id = DATA_TYPES.varint.read(this.buffer, DATA_TYPES.varint.size(this.length));
+		this.payload = buffer.subarray(DATA_TYPES.varint.size(this.length) + DATA_TYPES.varint.size(this.id));
 
 		if (struct) {
 			let offset = 0;
@@ -18,22 +17,6 @@ class Packet {
 				offset += DATA_TYPES[definition.type].size(this[definition.name], definition.options);
 			}
 		}
-	}
-
-	readVarInt() {
-		let pos = 0;
-		let result = 0;
-		let read = 0;
-	
-		do {
-			read = this.buffer.subarray(this.cursor).readUInt8(pos);
-			const int = (read & 0b01111111);
-			result |= (int << (7 * pos));
-			pos++;
-		} while ((read & 0b10000000) != 0);
-	
-		this.cursor += pos;
-		return result;
 	}
 }
 

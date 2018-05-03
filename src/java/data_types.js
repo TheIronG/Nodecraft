@@ -155,7 +155,7 @@ const string = {
 	}
 };
 
-const bytearray = {
+const buffer = {
 	read(buffer, offset=0, options) {
 		const length = module.exports[options.countType].read(buffer, offset);
 		const output = Buffer.alloc(length);
@@ -218,7 +218,7 @@ module.exports = {
 	i64, f64,
 	bool,
 	string,
-	bytearray,
+	buffer,
 	restBuffer,
-	position,
+	position
 };

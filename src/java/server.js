@@ -4,6 +4,7 @@ const exec = require('child_process').execSync;
 const path = require('path');
 const fs = require('fs-extra');
 const ini = require('ini');
+const crypto = require('crypto');
 const RSA = require('node-rsa');
 const MCData = require('minecraft-data');
 const bignum = require('bignum');
@@ -19,6 +20,8 @@ const Client = require('./client');
 
 const RCON = require('./rcon');
 const Query = require('./query');
+
+const World = require('./world');
 
 const MCServerError = require('./errors/mcserver.error');
 
@@ -43,6 +46,8 @@ class MCServer extends EventEmitter {
 		this.logger = new Logger(this.root);
 
 		this.plugins = [];
+
+		this.world = new World();
 
 		this.version = version;
 		this.properties = properties;
@@ -148,7 +153,7 @@ class MCServer extends EventEmitter {
 				const plugin_name = plugins[i];
 				const plugin_path = path.join(this.root, 'plugins', plugin_name);
 
-				this.logger.info(`Loading plugin ${plugin_name}`);
+				this.logger.info(`Loading logic plugin ${plugin_name}`);
 
 				// There has to be a better way of doing this
 				// This installs all the depends for the plugin, but is SUPER slow
@@ -177,11 +182,22 @@ class MCServer extends EventEmitter {
 			}
 		}
 
-		const base_plugin_data = {};
-		const base_plugin = require('./base_plugin');
-		base_plugin_data.plugin = new base_plugin(this);
-		base_plugin_data.plugin.enabled = true;
-		this.plugins.push(base_plugin_data);
+		// Load all the plugins that handle server logic
+		const logic_plugins = fs.readdirSync(path.join(__dirname, 'server_logic'));
+		for (let i = logic_plugins.length-1; i >= 0; i--) {
+			const plugin_name = logic_plugins[i];
+			const plugin_path = path.join(__dirname, 'server_logic', plugin_name);
+
+			this.logger.info(`Loading plugin ${plugin_name}`);
+
+			const logic_plugin_data = {};
+			const logic_plugin = require(plugin_path);
+			logic_plugin_data.plugin = new logic_plugin(this);
+			logic_plugin_data.plugin.enabled = true;
+			this.plugins.push(logic_plugin_data);
+
+			this.logger.success(`Successfully loaded logic plugin: ${plugin_name}!`);
+		}
 
 		this.initilized = true;
 		this.emit('initilized');
@@ -198,7 +214,7 @@ class MCServer extends EventEmitter {
 
 	static generateSeed() {
 		// generate a seed
-		return 'seed';
+		return crypto.randomBytes(24).toString('hex');
 	}
 
 	static handleUDPPacket(packet, client) {
