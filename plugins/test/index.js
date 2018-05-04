@@ -1,4 +1,4 @@
-const NodecraftPlugin = require('../../src/java/NodecraftPlugin');
+const NodecraftPlugin = require('../../src/java-edition/NodecraftPlugin');
 
 class Plugin extends NodecraftPlugin {
 	constructor(server) {
