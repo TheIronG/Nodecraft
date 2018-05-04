@@ -8,7 +8,7 @@ I would eventually like to make this server feature-complete and have it be a vi
 
 ## Currently only supports offline mode! Logins are NOT authenticated yet!
 
-## Implemented (Java Protocol):
+## Implemented (Java Edition Protocol):
 - [x] Server list handshake
 - [x] Server list info
 - [x] Server list ping/pong
