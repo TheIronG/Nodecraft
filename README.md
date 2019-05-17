@@ -1,3 +1,5 @@
+# [Moved to https://github.com/RedDuckss/Nodecraft (my real account, this was an alt)](https://github.com/RedDuckss/Nodecraft)
+
 # Nodecraft
 
 Nodecraft is a custom Mincraft server written from the ground up in NodeJS.
